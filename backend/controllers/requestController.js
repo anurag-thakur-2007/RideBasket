@@ -40,21 +40,21 @@ export const joinBasket = async (req, res) => {
       });
     }
 
+    // FIX: Check for ANY existing request (Pending or Accepted) to prevent duplicates
     const existingRequest = await Request.findOne({
       basketId,
       requesterId: req.user._id,
-      status: "Pending",
     });
 
     if (existingRequest) {
       return res.status(400).json({
         success: false,
-        message: "You have already requested to join this basket.",
+        message: "You have already interacting with this basket (Pending or Accepted).",
       });
     }
 
-    const availableSeats =
-      basket.requiredPassengers - basket.confirmedPassengers;
+    // FIX: Updated logic to match the new definition of requiredPassengers
+    const availableSeats = basket.requiredPassengers;
 
     if (passengers.length > availableSeats) {
       return res.status(400).json({
@@ -90,7 +90,6 @@ export const joinBasket = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-
     res.status(500).json({
       success: false,
       message: "Internal Server Error",
@@ -116,7 +115,6 @@ export const getMyRequests = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-
     res.status(500).json({
       success: false,
       message: "Internal Server Error",
@@ -152,7 +150,6 @@ export const getPendingRequests = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-
     res.status(500).json({
       success: false,
       message: "Internal Server Error",
@@ -195,7 +192,6 @@ export const markWhatsappClicked = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-
     return res.status(500).json({
       success: false,
       message: "Internal Server Error",
@@ -243,7 +239,8 @@ export const acceptRequest = async (req, res) => {
       });
     }
 
-    const availableSeats = basket.requiredPassengers - basket.confirmedPassengers;
+    // FIX: Updated logic to match the new definition of requiredPassengers
+    const availableSeats = basket.requiredPassengers;
 
     if (request.passengers.length > availableSeats) {
       return res.status(400).json({
@@ -257,6 +254,7 @@ export const acceptRequest = async (req, res) => {
 
     // Update basket data
     basket.confirmedPassengers += request.passengers.length;
+    basket.requiredPassengers -= request.passengers.length;
     basket.acceptedRequests += 1;
 
     // Count male/female passengers from the request
@@ -269,7 +267,7 @@ export const acceptRequest = async (req, res) => {
     });
 
     // Close the basket if it reaches or exceeds required passenger capacity
-    if (basket.confirmedPassengers >= basket.requiredPassengers) {
+    if (basket.requiredPassengers <= 0) {
       basket.status = "Closed";
     }
 

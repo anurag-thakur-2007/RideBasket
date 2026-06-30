@@ -1,45 +1,44 @@
 import { createContext, useEffect, useState } from "react";
+import { getStoredAuth, saveAuth, clearAuth } from "../utils/auth";
 
 export const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(
-    localStorage.getItem("token") || ""
-  );
-
-  const [user, setUser] = useState(null);
+  const [auth, setAuth] = useState(() => getStoredAuth());
 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (token) {
-      localStorage.setItem("token", token);
-    } else {
-      localStorage.removeItem("token");
-    }
-
     setLoading(false);
-  }, [token]);
+  }, []);
 
-  const login = (newToken, newUser) => {
-    setToken(newToken);
-    setUser(newUser);
+  const login = (token, user) => {
+    saveAuth(token, user);
+
+    setAuth({
+      token,
+      user,
+    });
   };
 
   const logout = () => {
-    setToken("");
-    setUser(null);
+    clearAuth();
+
+    setAuth({
+      token: "",
+      user: null,
+    });
   };
 
   return (
     <AuthContext.Provider
       value={{
-        token,
-        user,
+        token: auth.token,
+        user: auth.user,
         loading,
         login,
         logout,
-        isAuthenticated: !!token,
+        isAuthenticated: Boolean(auth.token),
       }}
     >
       {children}

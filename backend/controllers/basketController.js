@@ -7,7 +7,6 @@ import Basket from "../models/Basket.js";
 export const createBasket = async (req, res) => {
   try {
     const {
-      city,
       pickupPoint,
       destination,
       travelDate,
@@ -18,16 +17,16 @@ export const createBasket = async (req, res) => {
       approxCostPerPerson,
       joinPreference,
       notes,
+      maleFriends = 0,
+      femaleFriends = 0,
     } = req.body;
 
     // Validate required fields
     if (
-      !city ||
       !pickupPoint ||
       !destination ||
       !travelDate ||
       !travelTime ||
-      !cabType ||
       !totalSeats ||
       !requiredPassengers ||
       !approxCostPerPerson
@@ -38,20 +37,24 @@ export const createBasket = async (req, res) => {
       });
     }
 
-    // Creator gender count
-    let confirmedMaleCount = 0;
-    let confirmedFemaleCount = 0;
+    // Creator + friends gender count calculation
+    let confirmedMaleCount =
+      req.user.gender === "Male"
+        ? 1 + Number(maleFriends)
+        : Number(maleFriends);
 
-    if (req.user.gender === "Male") {
-      confirmedMaleCount = 1;
-    } else {
-      confirmedFemaleCount = 1;
-    }
+    let confirmedFemaleCount =
+      req.user.gender === "Female"
+        ? 1 + Number(femaleFriends)
+        : Number(femaleFriends);
+
+    const confirmedPassengers =
+      confirmedMaleCount +
+      confirmedFemaleCount;
 
     // Create Basket
     const basket = await Basket.create({
       creatorId: req.user._id,
-      city,
       pickupPoint,
       destination,
       travelDate,
@@ -59,7 +62,7 @@ export const createBasket = async (req, res) => {
       cabType,
       totalSeats,
       requiredPassengers,
-      confirmedPassengers: 1,
+      confirmedPassengers,
       confirmedMaleCount,
       confirmedFemaleCount,
       approxCostPerPerson,
@@ -96,8 +99,7 @@ export const getBaskets = async (req, res) => {
 
     const updatedBaskets = baskets.map((basket) => ({
       ...basket._doc,
-      availableSeats:
-        basket.requiredPassengers - basket.confirmedPassengers,
+      availableSeats: basket.requiredPassengers,
     }));
 
     res.status(200).json({
@@ -109,6 +111,74 @@ export const getBaskets = async (req, res) => {
     console.error(error);
 
     res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+// ======================================
+// Get Basket By ID
+// ======================================
+
+export const getBasketById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const basket = await Basket.findById(id)
+      .populate("creatorId", "name phone gender");
+
+    if (!basket) {
+      return res.status(404).json({
+        success: false,
+        message: "Basket not found.",
+      });
+    }
+
+    const updatedBasket = {
+      ...basket._doc,
+      availableSeats: basket.requiredPassengers,
+    };
+
+    return res.status(200).json({
+      success: true,
+      basket: updatedBasket,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+// ======================================
+// Get My Baskets
+// ======================================
+
+export const getMyBaskets = async (req, res) => {
+  try {
+    const baskets = await Basket.find({
+      creatorId: req.user._id,
+    })
+      .sort({ createdAt: -1 });
+
+    const updatedBaskets = baskets.map((basket) => ({
+      ...basket._doc,
+      availableSeats: basket.requiredPassengers,
+    }));
+
+    return res.status(200).json({
+      success: true,
+      count: updatedBaskets.length,
+      baskets: updatedBaskets,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
       success: false,
       message: "Internal Server Error",
     });
