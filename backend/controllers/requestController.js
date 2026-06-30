@@ -1,6 +1,6 @@
 import Basket from "../models/Basket.js";
 import Request from "../models/Request.js";
-import User from "../models/User.js";
+import User from "../models/user.js";
 
 // ======================================
 // Join Basket
