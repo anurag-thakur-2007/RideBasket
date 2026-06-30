@@ -37,3 +37,6 @@ vite.svg
 
 # Misc
 *.local
+
+.env
+.env.*
