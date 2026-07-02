@@ -102,7 +102,9 @@ const RequestCard = ({
           <div className="flex items-center gap-2 text-slate-600 text-sm">
             <FaCalendarAlt className="text-slate-400 shrink-0" />
             <span className="font-semibold text-slate-800">
-              {new Date(request.basketId.travelDate).toLocaleDateString()}
+              {new Date(request.basketId.travelDate).toLocaleDateString("en-GB", {
+                timeZone: "UTC",
+              })}
             </span>
           </div>
 

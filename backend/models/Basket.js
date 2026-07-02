@@ -60,7 +60,7 @@
       requiredPassengers: {
         type: Number,
         required: true,
-        min: 1,
+        min: 0,
       },
 
       // Creator is counted automatically

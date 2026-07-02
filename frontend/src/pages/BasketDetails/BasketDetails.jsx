@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom"; // Added useNavigate
+import { useParams, useNavigate } from "react-router-dom"; // Added useNavigate[cite: 1]
 import { toast } from "react-toastify";
 import {
   FaCalendarAlt,
@@ -10,7 +10,7 @@ import {
   FaRupeeSign,
   FaUsers,
 } from "react-icons/fa";
-import { FiArrowLeft } from "react-icons/fi"; // Added FiArrowLeft
+import { FiArrowLeft } from "react-icons/fi"; // Added FiArrowLeft[cite: 1]
 
 import useAuth from "../../hooks/useAuth";
 
@@ -28,7 +28,7 @@ import JoinBasketModal from "../../components/request/JoinBasketModal";
 const BasketDetails = () => {
   const { id } = useParams();
   const { user } = useAuth();
-  const navigate = useNavigate(); // Initialized navigate hook
+  const navigate = useNavigate(); // Initialized navigate hook[cite: 1]
 
   const [basket, setBasket] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -67,7 +67,9 @@ const BasketDetails = () => {
       const phone = data.creator.phone;
       const message = `Hi ${data.creator.name},\n\nI have sent a RideBasket request.\n\nRoute:\n${data.basket.pickupPoint} ➜ ${data.basket.destination}\n\nTravel Time:\n${new Date(
         data.basket.travelDate
-      ).toLocaleDateString()} ${data.basket.travelTime}\n\nLet's discuss the ride.`;
+      ).toLocaleDateString("en-GB", {
+        timeZone: "UTC",
+      })} ${data.basket.travelTime}\n\nLet's discuss the ride.`;
 
       window.open(
         `https://wa.me/91${phone}?text=${encodeURIComponent(message)}`,
@@ -157,7 +159,9 @@ const BasketDetails = () => {
                 <div>
                   <p className="text-[10px] text-slate-400 uppercase tracking-wider">Date</p>
                   <span className="text-sm font-semibold text-slate-800">
-                    {new Date(basket.travelDate).toLocaleDateString()}
+                    {new Date(basket.travelDate).toLocaleDateString("en-GB", {
+                      timeZone: "UTC",
+                    })}
                   </span>
                 </div>
               </div>
