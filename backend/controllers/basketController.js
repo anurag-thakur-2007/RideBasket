@@ -1,9 +1,5 @@
 import Basket from "../models/Basket.js";
 
-// ======================================
-// Create Basket
-// ======================================
-
 export const createBasket = async (req, res) => {
   try {
     const {
@@ -21,7 +17,6 @@ export const createBasket = async (req, res) => {
       femaleFriends = 0,
     } = req.body;
 
-    // Validate required fields
     if (
       !pickupPoint ||
       !destination ||
@@ -37,7 +32,6 @@ export const createBasket = async (req, res) => {
       });
     }
 
-    // Creator + friends gender count calculation
     let confirmedMaleCount =
       req.user.gender === "Male"
         ? 1 + Number(maleFriends)
@@ -52,7 +46,6 @@ export const createBasket = async (req, res) => {
       confirmedMaleCount +
       confirmedFemaleCount;
 
-    // Create Basket
     const basket = await Basket.create({
       creatorId: req.user._id,
       pickupPoint,
@@ -85,10 +78,6 @@ export const createBasket = async (req, res) => {
   }
 };
 
-// ======================================
-// Search Baskets
-// ======================================
-
 export const getBaskets = async (req, res) => {
   try {
     const baskets = await Basket.find({
@@ -117,16 +106,12 @@ export const getBaskets = async (req, res) => {
   }
 };
 
-// ======================================
-// Get Basket By ID
-// ======================================
-
 export const getBasketById = async (req, res) => {
   try {
     const { id } = req.params;
 
     const basket = await Basket.findById(id)
-      .populate("creatorId", "name phone gender");
+      .populate("creatorId", "name gender");
 
     if (!basket) {
       return res.status(404).json({
@@ -153,10 +138,6 @@ export const getBasketById = async (req, res) => {
     });
   }
 };
-
-// ======================================
-// Get My Baskets
-// ======================================
 
 export const getMyBaskets = async (req, res) => {
   try {
